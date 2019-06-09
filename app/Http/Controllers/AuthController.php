@@ -25,12 +25,18 @@ class AuthController extends Controller
 
         $rules = [
             'name' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users'
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|min:5'
         ];
+
         $validator = Validator::make($credentials, $rules);
+
         if($validator->fails()) {
-            return response()->json(['success'=> false, 'error'=> $validator->messages()]);
+            return response()->json([
+                'success'=> false,
+                'error'=> $validator->messages()]);
         }
+
         $name = $request->name;
         $email = $request->email;
         $password = $request->password;
@@ -43,11 +49,13 @@ class AuthController extends Controller
         $subject = "Por favor verifique seu e-mail.";
         Mail::send('email.verify', ['name' => $name, 'verification_code' => $verification_code],
             function($mail) use ($email, $name, $subject){
-                $mail->from(getenv('FROM_EMAIL_ADDRESS'), "ANGOLA SOS JUSTIÇA/Criar conta");
+                $mail->from(getenv('FROM_EMAIL_ADDRESS'), "SOS JUSTIÇA / Confirmação de conta");
                 $mail->to($email, $name);
                 $mail->subject($subject);
             });
-        return response()->json(['success'=> true, 'message'=> 'Thanks for signing up! Please check your email to complete your registration.']);
+        return response()->json([
+            'success'=> true,
+            'message'=> 'Obrigado pelo seu interesse em se juntar a comunidade! Por favor acesse seu e-mail para completar o cadastro.']);
     }
 
 
@@ -59,22 +67,29 @@ class AuthController extends Controller
     public function verifyUser($verification_code)
     {
         $check = DB::table('user_verifications')->where('token',$verification_code)->first();
+
         if(!is_null($check)){
+
             $user = User::find($check->user_id);
             if($user->is_verified == 1){
+
                 return response()->json([
                     'success'=> true,
-                    'message'=> 'Account already verified..'
+                    'message'=> 'Conta confirmada..'
                 ]);
             }
+
             $user->update(['is_verified' => 1]);
             DB::table('user_verifications')->where('token',$verification_code)->delete();
             return response()->json([
                 'success'=> true,
-                'message'=> 'You have successfully verified your email address.'
+                'message'=> 'Seu e-mail foi confirmado com sucesso.'
             ]);
+
         }
-        return response()->json(['success'=> false, 'error'=> "Verification code is invalid."]);
+        return response()->json([
+            'success'=> false,
+            'error'=> "Código de verificação inválido."]);
     }
 
 
@@ -96,24 +111,35 @@ class AuthController extends Controller
         $validator = Validator::make($credentials, $rules);
 
         if($validator->fails()) {
-            return response()->json(['success'=> false, 'error'=> $validator->messages()], 401);
+            return response()->json([
+                'success'=> false,
+                'error'=> $validator->messages()], 401);
         }
 
         $credentials['is_verified'] = 1;
 
         try {
+
             // attempt to verify the credentials and create a token for the user
             if (! $token = JWTAuth::attempt($credentials)) {
-                return response()->json(['success' => false, 'error' => 'We cant find an account with this credentials. Please make sure you entered the right information and you have verified your email address.'], 404);
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Não conseguimos encontrar uma conta com estas credenciais. Por favor,     certifique-se de ter inserido as informações corretas e de ter confirmado seu        endereço de e-mail.'], 404);
             }
+
         } catch (JWTException $e) {
+
             // something went wrong whilst attempting to encode the token
-            return response()->json(['success' => false, 'error' => 'Failed to login, please try again.'], 500);
+            return response()->json([
+                'success' => false,
+                'error' => 'Falha ao acessar, por favor tente novamente.'], 500);
         }
 
         // $token = auth()->setTTL(7200)->attempt($credentials);
         // all good so return the token
-        return response()->json(['success' => true, 'data'=> [ 'token' => $token ]], 200);
+        return response()->json([
+            'success' => true,
+            'data'=> [ 'token' => $token ]], 200);
     }
 
 
@@ -129,11 +155,19 @@ class AuthController extends Controller
         $this->validate($request, ['token' => 'required']);
 
         try {
+
             JWTAuth::invalidate($request->input('token'));
-            return response()->json(['success' => true, 'message'=> "You have successfully logged out."]);
+            return response()->json([
+                'success' => true,
+                'message'=> "Você saio do sistema."]);
+
         } catch (JWTException $e) {
+
             // something went wrong whilst attempting to encode the token
-            return response()->json(['success' => false, 'error' => 'Failed to logout, please try again.'], 500);
+            return response()->json([
+                'success' => false,
+                'error' => 'Falha ao sair, por favor tente novamente.'], 500);
+
         }
     }
 
@@ -148,20 +182,26 @@ class AuthController extends Controller
     {
         $user = User::where('email', $request->email)->first();
         if (!$user) {
-            $error_message = "Your email address was not found.";
-            return response()->json(['success' => false, 'error' => ['email'=> $error_message]], 401);
+            $error_message = "Seu e-mail não foi encontrado.";
+            return response()->json([
+                'success' => false,
+                'error' => ['email'=> $error_message]], 401);
         }
         try {
             Password::sendResetLink($request->only('email'), function (Message $message) {
-                $message->subject('Your Password Reset Link');
+                $message->subject('Link de redefinição de senha');
             });
         } catch (\Exception $e) {
+
             //Return with error
             $error_message = $e->getMessage();
-            return response()->json(['success' => false, 'error' => $error_message], 401);
+            return response()->json([
+                'success' => false,
+                'error' => $error_message], 401);
         }
         return response()->json([
-            'success' => true, 'data'=> ['message'=> 'A reset email has been sent! Please check your email.']
+            'success' => true,
+            'data'=> ['message'=> 'Um email de redefinição senha foi enviado! Por favor verifique seu     email.']
         ]);
     }
 
