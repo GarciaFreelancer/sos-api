@@ -25,5 +25,9 @@ Route::group(['prefix' => 'v1', 'middleware' =>  ['jwt.auth','cors']], function(
         'uses' => 'UserController@index'
     ]);
 
+    Route::get('/user/situation', [
+        'uses' => 'SituationController@userSituation'
+    ]);
+
 });
 

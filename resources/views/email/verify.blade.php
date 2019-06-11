@@ -8,12 +8,12 @@
 <div>
     Óla {{ $name }},
     <br>
-    Thank you for creating an account with us. Don't forget to complete your registration!
+    Obrigado por criar uma conta conosco. Não esqueça de completar seu cadastro!
     <br>
-    Please click on the link below or copy it into the address bar of your browser to confirm your email address:
+    Por favor, clique no link abaixo ou copie-o na barra de endereços do seu navegador para confirmar seu e-mail:
     <br>
 
-    <a href="{{ url('user/verify', $verification_code)}}">Confirm my email address </a>
+    <a href="{{ url('user/verify', $verification_code)}}">Confirmar meu email</a>
 
     <br/>
 </div>

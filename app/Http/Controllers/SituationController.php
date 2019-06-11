@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Situation;
+use App\User;
+use Validator;
 
 class SituationController extends Controller
 {
@@ -42,12 +44,21 @@ class SituationController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
             'title' => 'required | max:200',
             'description' => 'required',
             'status' => 'required',
             'user_id' => 'required|exists:users,id'
         ]);
+
+        if ($validator->fails()){
+            return response()->json([
+                'sucess' => false,
+                'error' => $validator->messages()
+            ]);
+        }
 
         $title = $request->input('title');
         $description = $request->input('description');
@@ -172,6 +183,18 @@ class SituationController extends Controller
             'msg' => 'Situação eliminada com sucesso'
         ], 200);
 
+    }
+
+    public function userSituation()
+    {
+        $user_situations = auth()->user()->situations();
+
+        $response = [
+            'msg' => 'Situações do usuário',
+            'data' => $user_situations->id
+        ];
+
+        return response()->json($response, 200);
     }
 
 }
