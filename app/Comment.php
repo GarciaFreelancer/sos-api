@@ -4,10 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Situation extends Model
+class Comment extends Model
 {
     protected $fillable = [
-        'title', 'description', 'status', 'file', 'user_id'
+        'situation_id',
+        'user_id',
+        'description'
     ];
 
     public function user()
@@ -15,8 +17,8 @@ class Situation extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function comments()
+    public function situation()
     {
-        return $this->hasMany(Comment::class);
+        return $this->belongsTo(Situation::class);
     }
 }

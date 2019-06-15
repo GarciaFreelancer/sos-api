@@ -7,15 +7,15 @@ Route::group(['prefix' => 'v1', 'middleware' => 'cors'], function(){
     Route::post('/user/login', 'AuthController@login');
 
     Route::post('/user/recover', 'AuthController@recover');
+
+    Route::resource('/situation', 'SituationController', [
+        'only' => ['index', 'show']
+    ]);
 });
 
 Route::group(['prefix' => 'v1', 'middleware' =>  ['jwt.auth','cors']], function(){
 
     Route::get('/user/logout', 'AuthController@logout');
-
-    Route::resource('/situation', 'SituationController', [
-        'except' => ['create', 'edit']
-    ]);
 
     Route::resource('comment', 'CommentController', [
         'only' => ['store', 'destroy', 'update']
@@ -25,8 +25,8 @@ Route::group(['prefix' => 'v1', 'middleware' =>  ['jwt.auth','cors']], function(
         'uses' => 'UserController@index'
     ]);
 
-    Route::get('/user/situation', [
-        'uses' => 'SituationController@userSituation'
+    Route::resource('/user/situation', 'UserSituationController', [
+        'except' => ['create', 'edit']
     ]);
 
 });
