@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Situation;
 use App\User;
 use Validator;
+use Auth;
 
 class SituationController extends Controller
 {
@@ -187,11 +188,18 @@ class SituationController extends Controller
 
     public function userSituation()
     {
-        $user_situations = auth()->user()->situations();
+        //$situations = auth()->user();
+        //$user = User::first();
+        //$token = auth()->login($user);
+        //$user_situations = $situations->user()->first();
+
+        $user = auth()->user();
+
+
 
         $response = [
             'msg' => 'Situações do usuário',
-            'data' => $user_situations->id
+            'data' => $user
         ];
 
         return response()->json($response, 200);

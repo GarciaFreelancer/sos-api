@@ -13,7 +13,7 @@
     Por favor, clique no link abaixo ou copie-o na barra de endereços do seu navegador para confirmar seu e-mail:
     <br>
 
-    <a href="{{ url('user/verify', $verification_code)}}">Confirmar meu email</a>
+    <a href="{{ url('user/verify', [$verification_code, $email])}}">Confirmar meu email</a>
 
     <br/>
 </div>
