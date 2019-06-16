@@ -14,10 +14,10 @@ class UserSituationController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $user_situation = $user->situations()->paginate();
+        $user_situation = $user->situations()->paginate(5);
 
         $response = [
-            'msg' => 'Sua lista de situações',
+            'message' => 'Sua lista de situações',
             'data' => $user_situation
         ];
 
@@ -25,12 +25,6 @@ class UserSituationController extends Controller
     }
 
 
-    /**
-    * Store a newly created resource in storage.
-    *
-    * @param  \Illuminate\Http\Request  $request
-    * @return \Illuminate\Http\Response
-    */
     public function store(Request $request)
     {
         $input = $request->all();
@@ -65,17 +59,12 @@ class UserSituationController extends Controller
 
         if ($situation->save())
         {
-            $situation->view_situation = [
-                'href' => 'api/v1/situation/' . $situation->id,
-                'method' => 'GET'
-            ];
-
-            $message = [
+            $response = [
                 'message' => 'Situação criada com sucesso',
                 'data' => $situation
             ];
 
-            return response()->json($message, 201);
+            return response()->json($response, 201);
         }
 
         $response = [
@@ -86,36 +75,28 @@ class UserSituationController extends Controller
 
     }
 
-    /**
-    * Display the specified resource.
-    *
-    * @param  int  $id
-    * @return \Illuminate\Http\Response
-    */
+
     public function show($id)
     {
-        $situation = Situation::findOrFail($id);
+        $situation = Situation::with('comments.user')->findOrFail($id);
+        $useu_authenticate = auth()->user()->id;
 
-        $situation->view_situation = [
-            'href' => 'api/v1/situation/' . $situation->id,
-            'method' => 'GET'
-        ];
+        if ($situation->user_id == $useu_authenticate)
+        {
+            $response = [
+                'message' => 'Situação encotrada com sucesso',
+                'data' => $situation
+            ];
 
-        $response = [
-            'msg' => 'Situação encotrada com sucesso',
-            'situation' => $situation
-        ];
+            return response()->json($response, 200);
+        }
 
-        return response()->json($response, 200);
+        return response()->json([
+            'message' => 'Situação que pretende abrir pertence uma outra pessoa'
+        ], 404);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function update(Request $request, $id)
     {
         $this->validate($request, [
@@ -139,38 +120,37 @@ class UserSituationController extends Controller
         if (!$situation->update())
         {
             return response()->json([
-                'msg' => 'Ocorreu erro durante a actualização'
+                'message' => 'Ocorreu erro durante a actualização'
             ], 404);
         }
 
-        $situation->view_situation = [
-            'href' => 'api/v1/situation/' . $situation->id,
-            'method' => 'GET'
-        ];
-
         $response = [
-            'msg' => 'Actualização feita com sucesso',
-            'situation' => $situation
+            'message' => 'Actualização feita com sucesso',
+            'data' => $situation
         ];
 
         return response()->json($response, 200);
 
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function destroy($id)
     {
         $situation = Situation::findOrFail($id);
-        $situation->delete();
+        $user_authenticate = auth()->user()->id;
+
+        if ($situation->user_id == $user_authenticate)
+        {
+            $situation->delete();
+
+            return response()->json([
+                'message' => 'Situação eliminada com sucesso'
+            ], 200);
+        }
 
         return response()->json([
-            'msg' => 'Situação eliminada com sucesso'
-        ], 200);
+            'message' => 'Situação que pretende eliminar pertence outra pessoa'
+        ], 404);
 
     }
 

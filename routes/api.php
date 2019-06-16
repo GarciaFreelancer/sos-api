@@ -17,7 +17,7 @@ Route::group(['prefix' => 'v1', 'middleware' =>  ['jwt.auth','cors']], function(
 
     Route::get('/user/logout', 'AuthController@logout');
 
-    Route::resource('comment', 'CommentController', [
+    Route::resource('/user/comment', 'CommentController', [
         'only' => ['store', 'destroy', 'update']
     ]);
 

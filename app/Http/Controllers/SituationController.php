@@ -9,11 +9,6 @@ use App\Comments;
 
 class SituationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
 
     private $situation;
 
@@ -22,44 +17,27 @@ class SituationController extends Controller
         $this->situation = $situation;
     }
 
+
     public function index()
     {
         $situations = $this->situation->paginate(5);
 
-        foreach ($situations as $situation)
-        {
-            $situation->view_situation = [
-                'href' => 'api/v1/situation/' . $situation->id,
-                'method' => 'GET'
-            ];
-        }
-
         $response = [
-            'msg' => 'Lista de Situações',
+            'message' => 'Lista de Situações',
             'data' => $situations
         ];
 
         return response()->json($response, 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function show($id)
     {
-        $situation = $this->situation->findOrFail($id);
-
-        $situation->view_situation = [
-            'href' => 'api/v1/situation/' . $situation->id,
-            'method' => 'GET'
-        ];
+        $situation = $this->situation->with('comments.user')->findOrFail($id);
 
         $response = [
-            'msg' => 'Situação encotrada com sucesso',
-            'situation' => $situation
+            'message' => 'Situação encotrada com sucesso',
+            'data' => $situation
         ];
 
         return response()->json($response, 200);
