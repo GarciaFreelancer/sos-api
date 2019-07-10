@@ -29,5 +29,9 @@ Route::group(['prefix' => 'v1', 'middleware' =>  ['jwt.auth','cors']], function(
         'except' => ['create', 'edit']
     ]);
 
+    Route::apiResource('/user/profile', 'ProfileController', [
+        'only' => ['store', 'show', 'update']
+    ]);
+
 });
 

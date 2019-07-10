@@ -31,7 +31,7 @@ class UserSituationController extends Controller
 
         $validator = Validator::make($input, [
             'title' => 'required | max:200',
-            'description' => 'required',
+            'description' => 'required | min:2',
             'status' => 'required'
             //'user_id' => 'required|exists:users,id'
         ]);
@@ -79,9 +79,9 @@ class UserSituationController extends Controller
     public function show($id)
     {
         $situation = Situation::with('comments.user')->findOrFail($id);
-        $useu_authenticate = auth()->user()->id;
+        $user_authenticate = auth()->user()->id;
 
-        if ($situation->user_id == $useu_authenticate)
+        if ($situation->user_id == $user_authenticate)
         {
             $response = [
                 'message' => 'Situação encotrada com sucesso',
@@ -99,11 +99,19 @@ class UserSituationController extends Controller
 
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'title' => 'required | max:200',
-            'description' => 'required',
-            'status' => 'required'
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'title' => 'mim:2 | max:200',
+            'description' => 'min:2'
         ]);
+
+        if ($validator->fails()){
+            return response()->json([
+                'sucess' => false,
+                'error' => $validator->messages()
+            ]);
+        }
 
         $title = $request->input('title');
         $description = $request->input('description');
@@ -111,25 +119,22 @@ class UserSituationController extends Controller
         $file = $request->input('file');
 
         $situation = Situation::findOrFail($id);
+        $user_authenticate = auth()->user()->id;
 
-        $situation->title = $title;
-        $situation->description = $description;
-        $situation->status = $status;
-        $situation->file = $file;
-
-        if (!$situation->update())
+        if ($situation->user_id == $user_authenticate)
         {
-            return response()->json([
-                'message' => 'Ocorreu erro durante a actualização'
-            ], 404);
+            $situation = $id->update($request->only(['title', 'description', 'status', 'file']));
+            //$situation->update(['title' => $title, 'description' => $description, 'status' => $status, 'file' => $file]);
+
+            $response = [
+                'message' => 'Situação alterada com sucesso',
+                'data' => $situation
+            ];
+
+            return response()->json($response, 200);
         }
 
-        $response = [
-            'message' => 'Actualização feita com sucesso',
-            'data' => $situation
-        ];
-
-        return response()->json($response, 200);
+        return response()->json(['message' => 'Não foi possivel alterar esta situação'], 404);
 
     }
 
