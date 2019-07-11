@@ -23,7 +23,7 @@ class ProfileController extends Controller
                 'data' => $profile
             ];
 
-            return response()->json($response, 200);
+            return response()->json($response, 201);
 
         }catch(\Exception $ex)
         {
@@ -39,12 +39,18 @@ class ProfileController extends Controller
     {
         $profile = Profile::findOrFail($id);
 
-        $response = [
-            'message' => 'Perfil de usuário encotrado com sucesso',
-            'data' => $profile
-        ];
+        if (is_null($profile)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perfil não encontrado'
+            ], 404);
+        }
 
-        return response()->json($response, 200);
+        return response()->json([
+            'success' => true,
+            'data' => $profile
+        ], 200);
+        
     }
 
     public function update(ProfileFormRequest $request, $id)
@@ -63,8 +69,9 @@ class ProfileController extends Controller
 
         if ($updated) {
             return response()->json([
-                'success' => true
-            ]);
+                'success' => true,
+                'data' => $profile
+            ], 200);
         } else {
             return response()->json([
                 'success' => false,

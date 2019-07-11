@@ -8,6 +8,8 @@ use App\Situation;
 use App\User;
 use Validator;
 use Auth;
+use App\Http\Requests\UserSituationtFormStoreRequest;
+use App\Http\Requests\UserSituationtFormUpdateRequest;
 
 class UserSituationController extends Controller
 {
@@ -25,24 +27,8 @@ class UserSituationController extends Controller
     }
 
 
-    public function store(Request $request)
+    public function store(UserSituationtFormStoreRequest $request)
     {
-        $input = $request->all();
-
-        $validator = Validator::make($input, [
-            'title' => 'required | max:200',
-            'description' => 'required | min:2',
-            'status' => 'required'
-            //'user_id' => 'required|exists:users,id'
-        ]);
-
-        if ($validator->fails()){
-            return response()->json([
-                'sucess' => false,
-                'error' => $validator->messages()
-            ]);
-        }
-
         $title = $request->input('title');
         $description = $request->input('description');
         $status = $request->input('status');
@@ -93,26 +79,12 @@ class UserSituationController extends Controller
 
         return response()->json([
             'message' => 'Situação que pretende abrir pertence uma outra pessoa'
-        ], 404);
+        ], 401);
     }
 
 
-    public function update(Request $request, $id)
+    public function update(UserSituationtFormUpdateRequest $request, $id)
     {
-        $input = $request->all();
-
-        $validator = Validator::make($input, [
-            'title' => 'mim:2 | max:200',
-            'description' => 'min:2'
-        ]);
-
-        if ($validator->fails()){
-            return response()->json([
-                'sucess' => false,
-                'error' => $validator->messages()
-            ]);
-        }
-
         $title = $request->input('title');
         $description = $request->input('description');
         $status = $request->input('status');
@@ -123,7 +95,7 @@ class UserSituationController extends Controller
 
         if ($situation->user_id == $user_authenticate)
         {
-            $situation = $id->update($request->only(['title', 'description', 'status', 'file']));
+            $situation->update($request->only(['title', 'description', 'status', 'file']));
             //$situation->update(['title' => $title, 'description' => $description, 'status' => $status, 'file' => $file]);
 
             $response = [
@@ -134,7 +106,7 @@ class UserSituationController extends Controller
             return response()->json($response, 200);
         }
 
-        return response()->json(['message' => 'Não foi possivel alterar esta situação'], 404);
+        return response()->json(['message' => 'Não foi possivel alterar esta situação'], 500);
 
     }
 
@@ -155,7 +127,7 @@ class UserSituationController extends Controller
 
         return response()->json([
             'message' => 'Situação que pretende eliminar pertence outra pessoa'
-        ], 404);
+        ], 401);
 
     }
 

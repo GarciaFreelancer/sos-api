@@ -9,27 +9,16 @@ use App\User;
 use Validator;
 use Auth;
 use App\Notifications\SituationCommented;
+use App\Http\Requests\CommentFormStoreRequest;
+use App\Http\Requests\CommentFormUpdateRequest;
 
 class CommentController extends Controller
 {
-    public function store(Request $request)
+    public function store(CommentFormStoreRequest $request)
     {
-        $input = $request->all();
-
-        $validator = Validator::make($input, [
-            'situation_id' => 'required|exists:situations,id',
-            'description' => 'required|max:15000'
-        ]);
-
-        if ($validator->fails()){
-            return response()->json([
-                'sucess' => false,
-                'error' => $validator->messages()
-            ]);
-        }
-
         try
         {
+            $input = $request->all();
             $user = auth()->user();
             $comment = $user->comments()->create($input);
 
@@ -55,21 +44,8 @@ class CommentController extends Controller
     }
 
 
-    public function update(Request $request, $id)
+    public function update(CommentFormUpdateRequest $request, $id)
     {
-        $input = $request->all();
-
-        $validator = Validator::make($input, [
-            'description' => 'required|max:15000'
-        ]);
-
-        if ($validator->fails()){
-            return response()->json([
-                'sucess' => false,
-                'error' => $validator->messages()
-            ]);
-        }
-
         try
         {
             $comment = Comment::findOrFail($id);
@@ -92,7 +68,7 @@ class CommentController extends Controller
 
             return response()->json([
                 'message' => 'Comentário que pretende alterar pertence outra pessoa'
-            ], 404);
+            ], 401);
 
         }catch(\Exception $ex){
 
@@ -124,8 +100,8 @@ class CommentController extends Controller
             }
 
             return response()->json([
-                'message' => 'Comentário que pretende eliminar não foi encontrado'
-            ], 404);
+                'message' => 'Comentário que pretende eliminar pertence outra pessoa'
+            ], 401);
 
         }catch(\Exception $ex){
 

@@ -21,10 +21,6 @@ Route::group(['prefix' => 'v1', 'middleware' =>  ['jwt.auth','cors']], function(
         'only' => ['store', 'destroy', 'update']
     ]);
 
-    Route::get('/users', [
-        'uses' => 'UserController@index'
-    ]);
-
     Route::resource('/user/situation', 'UserSituationController', [
         'except' => ['create', 'edit']
     ]);
